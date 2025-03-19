@@ -1,0 +1,40 @@
+.loaderContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .inlineLoader {
+    position: relative; /* Keeps loader inside content */
+    height: 100px; /* Fixed height for inline loader */
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent; /* No overlay */
+    top: 0;
+    left: 0;
+  }
+  
+  .spinner {
+    font-size: 50px;
+    color: #3498db;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
