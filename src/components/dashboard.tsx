@@ -62,7 +62,7 @@ export default function ParkingStackedBarChart() {
     async function fetchParkingData() {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:3000/api/getbuidingdetails");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/getbuidingdetails`);
         if (!response.ok) throw new Error("Failed to fetch data");
 
         const { data, basement_and_tenats, buildings_and_tenants } = await response.json();
