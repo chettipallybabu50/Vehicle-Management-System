@@ -1,5 +1,6 @@
 
 // app/layout.tsx
+import ToasterProvider from "@/components/toasterProvider";
 import Sidebar from "../components/Sidebar";
 import "./globals.css";
 
@@ -17,6 +18,7 @@ export default function RootLayout({
           style={{ width: "100%", maxWidth: "none" }}>
             {children}
           </main>
+          <ToasterProvider />
         </div>
       </body>
     </html>
