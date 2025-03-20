@@ -21,6 +21,8 @@ import dashboardstyle from "./dashboard.module.css"
 import { AiOutlineEye } from "react-icons/ai";
 import { FaEye, FaTimes } from "react-icons/fa";
 import Loader from "./loader";
+import { MdDownloadForOffline } from "react-icons/md";
+import toast from 'react-hot-toast';
 
 // Define TypeScript Interface for Parking Data
 interface ParkingData {
@@ -141,16 +143,6 @@ export default function ParkingStackedBarChart() {
         setcompanyAndbasementwise(formatDataForCompanyAndBasement)
         
 
-        // Sample API response (assuming it's an array of objects)
-        const apiData = [
-          { BuildingID: 3, building_name: "N heights", BasementID: 7, Basement_Name: "basement1", TenantID: 3, tenant_name: "paltech", basement_reserved_slots: 25 },
-          { BuildingID: 3, building_name: "N heights", BasementID: 8, Basement_Name: "basement2", TenantID: 3, tenant_name: "paltech", basement_reserved_slots: 20 },
-          { BuildingID: 1, building_name: "sharath mall", BasementID: 1, Basement_Name: "basement1", TenantID: 1, tenant_name: "Company A", basement_reserved_slots: 30 },
-          { BuildingID: 1, building_name: "sharath mall", BasementID: 2, Basement_Name: "basement2", TenantID: 2, tenant_name: "Company B", basement_reserved_slots: 40 },
-          { BuildingID: 1, building_name: "sharath mall", BasementID: 3, Basement_Name: "basement3", TenantID: 1, tenant_name: "Company A", basement_reserved_slots: 15 },
-          { BuildingID: 4, building_name: "Watermark", BasementID: 10, Basement_Name: "basement1", TenantID: 5, tenant_name: "Company C", basement_reserved_slots: 50 },
-        ];
-
         // Step 1: Convert API Data into Required Format
         const formattedDataforabasemnt_tenant: basementAndtebetwise[] = basement_and_tenats.reduce((acc: any[], curr: { building_name: any; Basement_Name: any; tenant_name: string | number; basement_reserved_slots: any; }) => {
           const key = `${curr.building_name} - ${curr.Basement_Name}`;
@@ -207,12 +199,62 @@ export default function ParkingStackedBarChart() {
     setFileName("")
   };
 
+ 
+  const download = async (Type: string) => {
+    console.log('------>> Type:', Type);
+  
+    try {
+      // Fetch the Excel file from the API
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/downloadparkingslotsReport?Type=${encodeURIComponent(Type)}`
+      );
+  
+      if (!response.ok) {
+        throw new Error("Failed to download file");
+      }
+
+      let filename = "Parking_slots.xlsx";
+      const contentDisposition = response.headers.get("Content-Disposition");
+      console.log('---->>contentDisposition', contentDisposition)
+      if (contentDisposition) {
+        console.log('---->> in side if contentDisposition', contentDisposition)
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+      
+
+      console.log('---->>filename', filename)
+      // Create a blob from the response
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+  
+      // Create a link element and trigger download
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename; // Name of the downloaded file
+      document.body.appendChild(link);
+      link.click();
+  
+      // Cleanup
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Download successful!');
+  
+      console.log("Download successful!");
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
+  
+
   return (
 
     <div >
        {loading && <Loader  />}
 
-      <div className={dashboardstyle.uploadcontainer}>
+      {/* <div className={dashboardstyle.uploadcontainer}>
         <label   className={dashboardstyle.customfileupload}>
           <input type="file" onChange={handleFileChange}  className={dashboardstyle.customfileuploadinput}/>
           {fileName ? fileName : "Select File"}
@@ -242,7 +284,7 @@ export default function ParkingStackedBarChart() {
         <button className={dashboardstyle.fileUploadsubmit}>
           Submit
         </button>
-      </div>
+      </div> */}
 
 
 
@@ -291,7 +333,10 @@ export default function ParkingStackedBarChart() {
         </div>
 
         <div className={dashboardstyle.customGraphs}>
-          <h3 className={dashboardstyle.chartTitle}>Company-wise Reserved Parking Slots</h3>
+          <div className={dashboardstyle.downloadflex}>
+          <h3 className={dashboardstyle.chartTitle}>Building-Tenant-wise Reserved Parking Slots</h3>
+          <button className={dashboardstyle.downloadbutton} onClick={() => download("BuildingandTenant")} ><MdDownloadForOffline size="1.7rem"/></button>
+          </div>
           <ResponsiveContainer width="100%" height="90%">
             <BarChart data={comapanyWiseparkingData} barSize={35} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -340,7 +385,10 @@ export default function ParkingStackedBarChart() {
         </div>
 
         <div className={dashboardstyle.customGraphs}>
-          <h3 className={dashboardstyle.chartTitle}>Basement-wise Company Reserved Parking Slots</h3>
+          <div className={dashboardstyle.downloadflex}>
+          <h3 className={dashboardstyle.chartTitle}>Basement-Tenant-wise Reserved Parking Slots</h3>
+          <button className={dashboardstyle.downloadbutton} onClick={() => download("Basementwise")} ><MdDownloadForOffline size="1.7rem"/></button>
+          </div>
           <ResponsiveContainer width="100%" height="90%">
             <BarChart data={companyAndbasementwise} barSize={35} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -375,103 +423,7 @@ export default function ParkingStackedBarChart() {
         
       </div>
 
-      {/* <div style={{ display: "flex", gap: "20px", width: "100%", marginBottom: "2rem" }}>
-        <div style={{ width: "100%", height: 400, border: "0.5px solid #978a8a", borderRadius: "5px", padding: "10px" }}>
-          <h3 style={{ textAlign: "center" }}>Company-wise Reserved Parking Slots</h3>
-          <ResponsiveContainer width="100%" height="90%">
-            <BarChart data={comapanyWiseparkingData} barSize={35} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-
-
-
-              {comapanyWiseparkingData.length > 0 &&
-                Array.from(
-                  new Set(comapanyWiseparkingData.flatMap((building) => Object.keys(building).filter((key) => key !== "name")))
-                ).map((company, index) => (
-                  <Bar key={company} dataKey={company} stackId="a" fill={getColor(index)} />
-                ))}
-
-
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div style={{ width: "100%", height: 400, border: "0.5px solid #978a8a", borderRadius: "5px", padding: "10px" }}>
-          <h3 style={{ textAlign: "center" }}>Company-wise Reserved Parking Slots per Basement</h3>
-          <ResponsiveContainer width="100%" height="90%">
-            <BarChart data={basementAndtenantData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="name"
-                interval={0} 
-                angle={-45} 
-                textAnchor="end"
-              />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-
-              {basementAndtenantData.length > 0 &&
-                Array.from(
-                  new Set(basementAndtenantData.flatMap((building) => Object.keys(building).filter((key) => key !== "name")))
-                ).map((company, index) => (
-                  <Bar key={company} dataKey={company} stackId="a" fill={getColor(index)} />
-                ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div> */}
-
-   
-
-
-      {/* <div style={{ display: "flex", gap: "20px", width: "100%", marginBottom: "2rem" }}>
-        <div style={{ width: "50%", height: 400, border: "0.5px solid #978a8a", borderRadius: "5px", padding: "10px" }}>
-          <h3 style={{ textAlign: "center" }}>Basement-wise Company Reserved Parking Slots</h3>
-          <ResponsiveContainer width="100%" height="90%">
-            <BarChart data={companyAndbasementwise} barSize={35} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-
-              {companyAndbasementwise.length > 0 &&
-                Array.from(
-                  new Set(companyAndbasementwise.flatMap((building) =>
-                    Object.keys(building).filter((key) => key !== "name" && key !== "building")
-                  ))
-                ).map((company, index, arr) => (
-                  <Bar key={company} dataKey={company} stackId="a" fill={getColor(index)}>
-                    {index === arr.length - 1 && (
-                      <LabelList
-                        dataKey="building"
-                        position="top"
-                        fill="black"
-                        fontSize={12}
-                        fontWeight="bold"
-                      />
-                    )}
-                  </Bar>
-                ))
-              }
-            </BarChart>
-
-          </ResponsiveContainer>
-        </div>
-      </div> */}
-
-
     </div>
-
-
-
-
-
 
   );
 }
