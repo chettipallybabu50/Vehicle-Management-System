@@ -3,6 +3,7 @@
 import ToasterProvider from "@/components/toasterProvider";
 import Sidebar from "../components/Sidebar";
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 export default function RootLayout({
   children,
