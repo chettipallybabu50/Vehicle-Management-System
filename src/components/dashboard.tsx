@@ -80,6 +80,7 @@ export default function ParkingStackedBarChart() {
             return acc;
           }, {})
         );
+        console.log('---->>total parking slots formattedData', formattedData)
 
         const parkingAllocatedData: ParkingData[] = Object.values(
           data.reduce(
@@ -91,6 +92,8 @@ export default function ParkingStackedBarChart() {
             {}
           )
         );
+
+        console.log('---->>parkingAllocatedData formattedData', parkingAllocatedData)
 
         if (buildings_and_tenants) {
           const buildingsAndTenantsData: CompanyWiseParking[] = Object.values(
@@ -330,7 +333,7 @@ export default function ParkingStackedBarChart() {
 
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </div> 
 
         <div className={dashboardstyle.customGraphs}>
           <div className={dashboardstyle.downloadflex}>
@@ -359,7 +362,7 @@ export default function ParkingStackedBarChart() {
           </ResponsiveContainer>
         </div>
 
-        <div className={dashboardstyle.customGraphs}>
+        {/* <div className={dashboardstyle.customGraphs}>
           <h3 className={dashboardstyle.chartTitle}>Company-wise Reserved Parking Slots per Basement</h3>
           <ResponsiveContainer width="100%" height="90%">
             <BarChart data={basementAndtenantData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
@@ -382,7 +385,7 @@ export default function ParkingStackedBarChart() {
                 ))}
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
 
         <div className={dashboardstyle.customGraphs}>
           <div className={dashboardstyle.downloadflex}>

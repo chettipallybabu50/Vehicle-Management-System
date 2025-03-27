@@ -63,9 +63,24 @@
 }
 
 .menuText {
-  display: inline-block;
-  white-space: nowrap;
+  /* display: inline-block;
+  white-space: nowrap; */
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
 }
+
+.linkText {
+  transition: opacity 0.3s ease;
+}
+
+
 
 /* Responsive Design */
 /* @media (max-width: 768px) {
@@ -82,3 +97,35 @@
     width: 0;
   }
 } */
+
+
+/* Mobile Styles (≤ 768px) */
+@media (max-width: 768px) {
+  .sidebar.closed {
+    width: 0; /* Fully hidden when closed */
+    overflow: hidden;
+  }
+
+  .sidebar.open {
+    width: 200px; /* Full width when toggled open */
+  }
+
+  .toggle-button {
+    display: block; /* Always show toggle on mobile */
+  }
+}
+
+/* Desktop Styles (> 768px) */
+@media (min-width: 769px) {
+  .sidebar {
+    width: 200px; /* Always open on desktop */
+  }
+
+  .sidebar.closed {
+    width: 200px; /* No collapsing on desktop */
+  }
+
+  .toggle-button {
+    display: none; /* Hide toggle button on desktop */
+  }
+}
