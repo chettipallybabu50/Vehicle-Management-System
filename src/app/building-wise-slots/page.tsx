@@ -3,6 +3,9 @@ import React, { useState ,useEffect } from 'react'
 import Styles from './building.module.css'
 import {BarChart,Bar,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer,LabelList, Cell,} from "recharts";
 import { basename } from 'path';
+import { BsDisplay } from 'react-icons/bs';
+import { FaDownload, FaSpinner } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 interface totalbuildingparking {
   basename: string;
   capcity : number;
@@ -38,6 +41,8 @@ export default function Buidingwise() {
    const [allocatedparkingslots, setAllocatedparkingslots] = useState<allocatedslots[]>([])
    const [tenanatsAndbasements, settenanatsAndbasements] = useState<FormattedDataforbasementsAndtenants[]>([])
    const [basementsAndTenantwise, setbasementsAndTenantwise] = useState<basementsAndtenants[]>([])
+   const [isLoading, setIsLoading] = useState(false);
+   const [isLoadingtwo, setisLoadingtwo] = useState(false);
 
   useEffect(() => {
     getsinglebuildingdata();
@@ -127,6 +132,61 @@ const getsinglebuildingdata= async() =>{
 
   }
 }
+
+const downloadXcellReport = async (Type:string)=>{
+  console.log('---->>TYpe ', Type )
+  if(Type=='Total'){
+    setIsLoading(true);
+  }
+  else if(Type=='Allocated'){
+    setisLoadingtwo(true)
+
+  }
+  // setIsLoading(true);
+  try{
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/singlebuildingReport?Type=${encodeURIComponent(Type)}`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to download file");
+    }
+
+    let filename = "Single_building_slots.xlsx";
+    const contentDisposition = response.headers.get("Content-Disposition");
+    console.log('---->>contentDisposition', contentDisposition)
+    if (contentDisposition) {
+      console.log('---->> in side if contentDisposition', contentDisposition)
+      const match = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (match && match[1]) {
+        filename = match[1];
+      }
+    }
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+          link.href = url;
+          link.download = filename; // Name of the downloaded file
+          document.body.appendChild(link);
+          link.click();
+      
+          // Cleanup
+          link.parentNode?.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          toast.success('Download successful!');
+
+  }
+  catch(error){
+    console.log('---->error', error)
+  }finally {
+    setIsLoading(false);
+    setisLoadingtwo(false)
+
+  }
+  
+
+}
   return (
     <div className={Styles.buidingcontainer}>
       <h3>
@@ -136,7 +196,17 @@ const getsinglebuildingdata= async() =>{
       <div className={Styles.graphContainer}>
 
         <div className={Styles.customGraph}>
-          <h4 className="text-2xl font-bold text-center mb-4">Parking Capacity by Basement</h4>
+          <div className={Styles.graphDownload}>
+            <h4 >Parking Capacity by Basement In Building</h4>
+            <button className={Styles.btn} onClick={() => downloadXcellReport('Total')}>
+              {/* <FaDownload /> */}
+              {isLoading ? (
+                <FaSpinner className={Styles.animatespin} size={20} />
+              ) : (
+                <FaDownload />
+              )}
+            </button>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={TotalparkingSlots} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -153,7 +223,16 @@ const getsinglebuildingdata= async() =>{
         </div>
 
         <div className={Styles.customGraph}>
-          <h4 className="text-2xl font-bold text-center mb-4">Allocated Slots by Basement</h4>
+          <div className={Styles.graphDownload}>
+            <h4 >Allocated Slots by Basement In Building</h4>
+            <button className={Styles.btn} onClick={() => downloadXcellReport('Allocated')}>
+              {isLoadingtwo ? (
+                <FaSpinner className={Styles.animatespin} size={20} />
+              ) : (
+                <FaDownload />
+              )}
+            </button>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={allocatedparkingslots} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -174,7 +253,7 @@ const getsinglebuildingdata= async() =>{
 
 
         <div className={Styles.customGraph}>
-          <h4 className="text-2xl font-bold text-center mb-4">Comapany And Basement Wise</h4>
+          <h4 className="text-2xl font-bold text-center mb-4">Comapany And Basement Wise In Building</h4>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={tenanatsAndbasements} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -205,7 +284,7 @@ const getsinglebuildingdata= async() =>{
         </div>
 
         <div className={Styles.customGraph}>
-          <h4 className="text-2xl font-bold text-center mb-4">Basement And Company Wise</h4>
+          <h4 className="text-2xl font-bold text-center mb-4">Basement And Company Wise In Building</h4>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={basementsAndTenantwise} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
