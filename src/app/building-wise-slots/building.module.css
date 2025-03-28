@@ -23,6 +23,34 @@
     box-shadow: 1px 1px 9px
 
 }
+
+.graphDownload{
+  display: flex;
+  justify-content:space-between;
+}
+
+.btn {
+  background-color: #2196F3;
+  color: white;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.7s, box-shadow 0.1s;
+}
+
+/* Hover effect */
+.btn:hover {
+  background-color: #45a049;
+}
+
+/* Click (active) effect */
+.btn:active {
+  transform: scale(1.25); /* Button shrinks slightly */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Adds a pressed look */
+}
+
+
 .customGraph:hover {
     transform: scale(1.03); 
     transition: transform 0.2s ease-in-out; 
@@ -35,3 +63,16 @@
       font-size: 0.7rem; /* Around 19.2px */
     }
   }
+
+   .animatespin {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  } 
