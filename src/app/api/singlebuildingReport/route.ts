@@ -187,6 +187,76 @@ export async function GET(req: NextRequest) {
                 },
             });
        }
+
+        if (Type == 'CompanybasementWise') {
+
+            const [companyandbasementwiseresult] = await pool.query(`SELECT name as Company_name, Basement_Name, basement_reserved_slots FROM tenant_basement_details; `);
+
+            const companybasementwise = companyandbasementwiseresult as any[];
+
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("CompanyandBasementwise");
+
+            worksheet.columns = [
+                { header: "S.No", key: "serial_number", width: 10 },
+                { header: "Company Name", key: "company_name", width: 20 },
+                { header: "Basement Name", key: "Basement_Name", width: 25 },
+                { header: "Allocated Parking Slots", key: "allocated_parking_slots", width: 20 },
+            ];
+
+            const headerRow = worksheet.getRow(1);
+            console.log('----->>>headerRow', headerRow)
+            headerRow.eachCell((cell) => {
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "FFCC00" }, // Yellow
+                };
+                cell.font = { bold: true, color: { argb: "000000" } }; // Bold and black
+            });
+
+            let currentCompany = "";
+            let serialNumber = 1;
+            companybasementwise.forEach((row) => {
+                // If company name changes, add a new row for the company
+                if (row.Company_name !== currentCompany) {
+
+                    worksheet.addRow({
+                        serial_number: serialNumber,
+                        company_name: row.Company_name,
+                        Basement_Name: "", // Empty for company row
+                        allocated_parking_slots: "",
+                      });
+                      currentCompany = row.Company_name;
+                      serialNumber++; // Increment serial number
+                    // worksheet.addRow([row.Company_name, "", ""]); // Add company name row
+                    // currentCompany = row.Company_name;
+                }
+
+                worksheet.addRow({
+                    serial_number: "", // No serial number for sub-rows
+                    company_name: "",
+                    Basement_Name: row.Basement_Name,
+                    allocated_parking_slots: row.basement_reserved_slots,
+                  });
+                // Add basement and reserved slots row under the company
+                // worksheet.addRow(["", row.Basement_Name, row.basement_reserved_slots]);
+            });
+
+            //  Generate Excel Buffer
+            const buffer = await workbook.xlsx.writeBuffer();
+
+            // Return as Excel File
+            return new NextResponse(buffer, {
+                status: 200,
+                headers: {
+                    "Content-Disposition": "attachment; filename=Company_Basement_Wise.xlsx",
+                    "Content-Type":
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                },
+            });
+           
+        }
     }
     catch (error) {
         return NextResponse.json(

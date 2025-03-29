@@ -43,6 +43,8 @@ export default function Buidingwise() {
    const [basementsAndTenantwise, setbasementsAndTenantwise] = useState<basementsAndtenants[]>([])
    const [isLoading, setIsLoading] = useState(false);
    const [isLoadingtwo, setisLoadingtwo] = useState(false);
+   const [isLoadingthree, setisLoadingthree] = useState(false);
+   const [isLoadingfour, setisLoadingfour] = useState(false);
 
   useEffect(() => {
     getsinglebuildingdata();
@@ -140,7 +142,11 @@ const downloadXcellReport = async (Type:string)=>{
   }
   else if(Type=='Allocated'){
     setisLoadingtwo(true)
-
+  }
+  else if(Type=='CompanybasementWise'){
+    setisLoadingthree(true)
+  }else{
+    setisLoadingfour(true)
   }
   // setIsLoading(true);
   try{
@@ -182,6 +188,8 @@ const downloadXcellReport = async (Type:string)=>{
   }finally {
     setIsLoading(false);
     setisLoadingtwo(false)
+    setisLoadingthree(false)
+    setisLoadingfour(false)
 
   }
   
@@ -253,13 +261,23 @@ const downloadXcellReport = async (Type:string)=>{
 
 
         <div className={Styles.customGraph}>
-          <h4 className="text-2xl font-bold text-center mb-4">Comapany And Basement Wise In Building</h4>
+          <div className={Styles.graphDownload}>
+            <h4 >Comapany And Basement Wise In Building</h4>
+            <button className={Styles.btn} onClick={() => downloadXcellReport('CompanybasementWise')}>
+              {isLoadingthree ? (
+                <FaSpinner className={Styles.animatespin} size={20} />
+              ) : (
+                <FaDownload />
+              )}
+            </button>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={tenanatsAndbasements} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="tenant_name" />
               <YAxis />
               <Tooltip />
+               <Legend />
               {tenanatsAndbasements.length > 0 &&
                 Array.from(
                   new Set(
@@ -284,13 +302,23 @@ const downloadXcellReport = async (Type:string)=>{
         </div>
 
         <div className={Styles.customGraph}>
-          <h4 className="text-2xl font-bold text-center mb-4">Basement And Company Wise In Building</h4>
+          <div className={Styles.graphDownload}>
+            <h4 >Basement And Company Wise In Building</h4>
+            <button className={Styles.btn} onClick={() => downloadXcellReport('BasementcompanyWise')}>
+              {isLoadingfour ? (
+                <FaSpinner className={Styles.animatespin} size={20} />
+              ) : (
+                <FaDownload />
+              )}
+            </button>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={basementsAndTenantwise} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="BasementName" />
               <YAxis />
               <Tooltip />
+               <Legend />
               {basementsAndTenantwise.length > 0 &&
                 Array.from(
                   new Set(
