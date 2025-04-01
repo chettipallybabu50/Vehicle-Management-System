@@ -257,8 +257,141 @@ export async function GET(req: NextRequest) {
             });
            
         }
+
+
+        if (Type == 'BasementcompanyWise') {
+            const [basementAndcompanywiseresult] = await pool.query(`
+        SELECT 
+            name as Company_name,
+            Basement_Name,
+            basement_reserved_slots
+        FROM 
+            tenant_basement_details
+        ORDER BY 
+            Basement_Name, Company_name;
+    `);
+
+            const basementCompanywise = basementAndcompanywiseresult as any[];
+
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("BasementandCompanywise");
+
+            worksheet.columns = [
+                { header: "S.No", key: "serial_number", width: 10 },
+                { header: "Basement Name", key: "Basement_Name", width: 25 },
+                { header: "Company Name", key: "company_name", width: 25 },
+                { header: "Allocated Parking Slots", key: "allocated_parking_slots", width: 25 },
+            ];
+
+            const headerRow = worksheet.getRow(1);
+            headerRow.eachCell((cell) => {
+                cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFCC00" } }; // Yellow
+                cell.font = { bold: true, color: { argb: "000000" } }; // Bold and black
+            });
+
+            let serialNumber = 1; // Serial number for rows
+            let currentBasement = ""; // Track the current basement to group companies
+            let basementTotalSlots = 0; // To accumulate total parking slots for a basement
+
+            basementCompanywise.forEach((row, index) => {
+                // Check if basement has changed
+                if (row.Basement_Name.trim() !== currentBasement) {
+                    // Add basement row
+                    if (currentBasement !== "") {
+                        // Add row for total allocated parking slots after the companies for previous basement
+                        let totalRow = worksheet.addRow({
+                            serial_number: "",
+                            Basement_Name: "Total for " + currentBasement,
+                            company_name: "", // No company name
+                            allocated_parking_slots: basementTotalSlots,
+                        });
+
+                        totalRow.eachCell((cell) => {
+                            cell.fill = {
+                                type: "pattern",
+                                pattern: "solid",
+                                fgColor: { argb: "D9D9D9" }, // Light gray color
+                            };
+                            cell.font = { bold: true }; // Make text bold for total row
+
+                            cell.border = {
+                                top: { style: "thin" },
+                                left: { style: "thin" },
+                                bottom: { style: "thin" },
+                                right: { style: "thin" },
+                            };
+                        });
+
+                    }
+
+                    // Reset total for the new basement
+                    basementTotalSlots = 0;
+
+                    // Add new basement row
+                    worksheet.addRow({
+                        serial_number: serialNumber,
+                        Basement_Name: row.Basement_Name,
+                        company_name: "", // No company name for basement row
+                        allocated_parking_slots: "",
+                    });
+                    currentBasement = row.Basement_Name;
+                    serialNumber++; // Increment serial number
+                }
+
+                // Add company row under the basement
+                worksheet.addRow({
+                    serial_number: "", // No serial number for sub-rows
+                    Basement_Name: "", // Empty basement name for company rows
+                    company_name: row.Company_name,
+                    allocated_parking_slots: row.basement_reserved_slots,
+                });
+
+                // Accumulate the total allocated parking slots for this basement
+                basementTotalSlots += row.basement_reserved_slots;
+            });
+
+            // Add total row for the last basement
+            if (currentBasement !== "") {
+                let totallastrow = worksheet.addRow({
+                    serial_number: "",
+                    Basement_Name: "Total for " + currentBasement,
+                    company_name: "", // No company name
+                    allocated_parking_slots: basementTotalSlots,
+                });
+
+                totallastrow.eachCell((cell) => {
+                    cell.fill = {
+                        type: "pattern",
+                        pattern: "solid",
+                        fgColor: { argb: "D9D9D9" }, // Light gray color
+                    };
+                    cell.font = { bold: true }; // Make text bold for total row
+
+                    cell.border = {
+                        top: { style: "thin" },
+                        left: { style: "thin" },
+                        bottom: { style: "thin" },
+                        right: { style: "thin" },
+                    };
+                });
+            }
+
+            const buffer = await workbook.xlsx.writeBuffer();
+
+            return new NextResponse(buffer, {
+                status: 200,
+                headers: {
+                    "Content-Disposition": "attachment; filename=Basement_Company_Wise.xlsx",
+                    "Content-Type":
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                },
+            });
+        }
+
+
     }
     catch (error) {
+        console.log('---error', error)
         return NextResponse.json(
             { error: "Failed to generate Excel" },
             { status: 500 }
