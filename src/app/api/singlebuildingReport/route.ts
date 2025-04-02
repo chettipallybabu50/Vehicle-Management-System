@@ -217,9 +217,37 @@ export async function GET(req: NextRequest) {
 
             let currentCompany = "";
             let serialNumber = 1;
+            let total_allocated_slots = 0;
             companybasementwise.forEach((row) => {
                 // If company name changes, add a new row for the company
                 if (row.Company_name !== currentCompany) {
+                    
+                    if(currentCompany !==""){
+                          let totalComRow = worksheet.addRow({
+                            serial_number: "",
+                            company_name: "Total" ,
+                            Basement_Name: "", // No company name
+                            allocated_parking_slots: total_allocated_slots,
+                        });
+
+                        totalComRow.eachCell((cell) => {
+                            cell.fill = {
+                                type: "pattern",
+                                pattern: "solid",
+                                fgColor: { argb: "D9D9D9" }, // Light gray color
+                            };
+                            cell.font = { bold: true }; // Make text bold for total row
+
+                            cell.border = {
+                                top: { style: "thin" },
+                                left: { style: "thin" },
+                                bottom: { style: "thin" },
+                                right: { style: "thin" },
+                            };
+                        });
+                    }
+
+                    total_allocated_slots = 0;
 
                     worksheet.addRow({
                         serial_number: serialNumber,
@@ -239,9 +267,36 @@ export async function GET(req: NextRequest) {
                     Basement_Name: row.Basement_Name,
                     allocated_parking_slots: row.basement_reserved_slots,
                   });
+
+                  total_allocated_slots += row.basement_reserved_slots;
                 // Add basement and reserved slots row under the company
                 // worksheet.addRow(["", row.Basement_Name, row.basement_reserved_slots]);
             });
+
+            if(currentCompany !==""){
+                let LasrtotalComRow = worksheet.addRow({
+                  serial_number: "",
+                  company_name: "Total" ,
+                  Basement_Name: "", // No company name
+                  allocated_parking_slots: total_allocated_slots,
+              });
+
+              LasrtotalComRow.eachCell((cell) => {
+                  cell.fill = {
+                      type: "pattern",
+                      pattern: "solid",
+                      fgColor: { argb: "D9D9D9" }, // Light gray color
+                  };
+                  cell.font = { bold: true }; // Make text bold for total row
+
+                  cell.border = {
+                      top: { style: "thin" },
+                      left: { style: "thin" },
+                      bottom: { style: "thin" },
+                      right: { style: "thin" },
+                  };
+              });
+          }
 
             //  Generate Excel Buffer
             const buffer = await workbook.xlsx.writeBuffer();
