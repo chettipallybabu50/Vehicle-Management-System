@@ -8,6 +8,7 @@ import styles from "./Sidebar.module.css";
 import { FiGrid, FiHome } from "react-icons/fi";
 import { CiSettings } from "react-icons/ci";
 import { IoMdHelpCircleOutline } from "react-icons/io";
+import { RiLogoutCircleLine } from "react-icons/ri";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true); // Open by default on desktop
@@ -36,6 +37,7 @@ const Sidebar = () => {
     { name: "Slot Details", path: "/building-wise-slots", icon:<FiGrid /> },
     { name: "Settings", path: "/settings" ,icon:<CiSettings />},
     { name: "Queries", path: "/queries" ,icon: <IoMdHelpCircleOutline/>},
+    { name: "Log Out", path:"", icon: <RiLogoutCircleLine />}
   ];
 
   return (
