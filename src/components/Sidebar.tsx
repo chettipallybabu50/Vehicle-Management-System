@@ -9,6 +9,7 @@ import { FiGrid, FiHome } from "react-icons/fi";
 import { CiSettings } from "react-icons/ci";
 import { IoMdHelpCircleOutline } from "react-icons/io";
 import { RiLogoutCircleLine } from "react-icons/ri";
+import { FaCar } from "react-icons/fa";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true); // Open by default on desktop
@@ -35,6 +36,7 @@ const Sidebar = () => {
   const menuItems = [
     { name: "Dashboard", path: "/", icon: <FiHome /> },
     { name: "Slot Details", path: "/building-wise-slots", icon:<FiGrid /> },
+    { name: "Vehicle Wise Parking", path: "/vehicle-wise-parking-details" ,icon:<FaCar  />},
     { name: "Settings", path: "/settings" ,icon:<CiSettings />},
     { name: "Queries", path: "/queries" ,icon: <IoMdHelpCircleOutline/>},
     { name: "Log Out", path:"", icon: <RiLogoutCircleLine />}
