@@ -2,6 +2,48 @@
     margin: 0.5rem;
 }
 .graphHeading{
-    font-size: 1rem;
+    font-size: 0.7rem;
     font-weight: bold;
+    padding-bottom: 7px;
+    color: blanchedalmond;
 }
+.graphcontainer{
+    display: grid;
+    /* grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); */
+    gap: 20px;
+    /* max-width: 1000px; */
+    width: 100%;
+    padding: 20px;
+    grid-template-columns: 1fr;
+}
+.graphsstyles{
+    border: 1px solid #d716ca;
+    padding: 12px;
+    border-radius: 5px;
+    background-color : #9ba9ab;
+}
+.basementSelection{
+    height: 1.6rem;
+    border-radius: 5px;
+    background-color: cornflowerblue;
+    color: white;
+    width: 4rem;
+}
+.headingandselectcontainer{
+    display: flex;
+    justify-content: space-between;
+}
+
+@media (min-width: 768px) {
+    .graphcontainer {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      /* max-width: 1000px; */
+      width: 100%;
+      padding: 20px;
+    }
+    .graphHeading{
+        font-size: 1rem;
+    }
+
+  }
