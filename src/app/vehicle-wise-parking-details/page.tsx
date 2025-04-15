@@ -166,7 +166,8 @@ export default function vehicleWise() {
       const formatDetailedviewbasement = data.map((item: any) => ({
         company_name: item.Company_name,
         two_wheeler: item.two_wheeler_slots_reserved,
-        four_wheeler: item.four_wheeler_slots_reserved
+        four_wheeler: item.four_wheeler_slots_reserved,
+        basement_reserved_slots: item.basement_reserved_slots
       }))
       console.log('---->>formatDetailedviewbasement', formatDetailedviewbasement)
       setbasemetcompanyvehicle(formatDetailedviewbasement)
@@ -249,6 +250,24 @@ export default function vehicleWise() {
   //   }
 
   // }
+
+  const CustomTooltip_two = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+  
+      return (
+        <div style={{ background: 'white', padding: '10px', border: '1px solid #ccc' }}>
+          <p style={{ fontWeight: 'bold', color: '#3f51b5' }}>Company: {label}</p>
+          <p style={{ color: '#F8766D' }}>two_wheeler : {data.two_wheeler}</p>
+          <p style={{ color: '#7CAE00' }}>four_wheeler : {data.four_wheeler}</p>
+          <p style={{ color: '#FF8C00', margin: '4px 0' }}>Reserved Slots: {data.basement_reserved_slots}</p> {/* ✅ New line */}
+        </div>
+      );
+    }
+    return null;
+  };
+  
+  
   
   return (
     <div className={Styles.vechicleComtainer}>
@@ -283,7 +302,7 @@ export default function vehicleWise() {
 
 
               <div className={Styles.graphsstyles}>
-                <p className={Styles.graphHeading}> Total Vehicles in a Basement</p>
+                <p className={Styles.graphHeading}> Total Capacity of a Basement</p>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={totalbasementvehicedata}  >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -336,7 +355,7 @@ export default function vehicleWise() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="company_name" />
                       <YAxis />
-                      <Tooltip />
+                      <Tooltip content={<CustomTooltip_two />}/>
                       <Legend />
                       <Bar dataKey="two_wheeler" fill="#F8766D" activeBar={<Rectangle fill="pink" stroke="blue" />} barSize={30} />
                       <Bar dataKey="four_wheeler" fill="#7CAE00" activeBar={<Rectangle fill="gold" stroke="purple" />} barSize={30} />
