@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from 'react'
 import Styles from './vehicleWise.module.css'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, Cell, Rectangle, } from "recharts";
-import { FaSpinner } from 'react-icons/fa';
+import { FaDownload, FaSpinner } from 'react-icons/fa';
+import toast from 'react-hot-toast';
+
 
 interface vechiclesdata {
   two_wheeler: number;
@@ -50,6 +52,7 @@ export default function vehicleWise() {
   const [loading, setLoading] = useState(false);
   const [loadingForcomapnyview, setloadingForcomapnyview] = useState(false);
   const [componentloading, setcomponentloading] = useState(false)
+  const [loading_total, setloading_total] = useState(false);
 
  
   useEffect(() => {
@@ -266,6 +269,55 @@ export default function vehicleWise() {
     }
     return null;
   };
+
+  const downloadvehicleReport = async (Type: string) => {
+    console.log('--->>Type', Type)
+    if(Type== 'Total'){
+      setloading_total(true)
+
+    }
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/vehicleReportdownload?Type=${encodeURIComponent(Type)}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to download file");
+      }
+      let filename = "Total_vehicle_wise_report";
+      const contentDisposition = response.headers.get("Content-Disposition");
+      console.log('---->>contentDisposition', contentDisposition)
+      if (contentDisposition) {
+        console.log('---->> in side if contentDisposition', contentDisposition)
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename; // Name of the downloaded file
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Download successful!');
+
+    } catch (error) {
+
+    }
+    finally {
+      setloading_total(false)
+
+    }
+
+
+  }
   
   
   
@@ -302,7 +354,17 @@ export default function vehicleWise() {
 
 
               <div className={Styles.graphsstyles}>
-                <p className={Styles.graphHeading}> Total Capacity of a Basement</p>
+                <div className={Styles.headingandselectcontainer}>
+                  <p className={Styles.graphHeading}> Total Capacity of a Basement</p>
+                  {loading_total ? (
+                    <FaSpinner className={Styles.animatespin} size={20} />
+                  ) : (
+                    <button className={Styles.vbtn}
+                      onClick={() => downloadvehicleReport('Total')}>
+                      <FaDownload />
+                    </button>
+                  )}
+                </div>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={totalbasementvehicedata}  >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -317,7 +379,12 @@ export default function vehicleWise() {
               </div>
 
               <div className={Styles.graphsstyles}>
-                <p className={Styles.graphHeading}> Allocated Vehicles in a Basement</p>
+                <div className={Styles.headingandselectcontainer}>
+                  <p className={Styles.graphHeading}> Allocated Vehicles in a Basement</p>
+                  <button className={Styles.vbtn}>
+                    <FaDownload />
+                  </button>
+                </div>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={allocatedvehiclesData}  >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -334,15 +401,20 @@ export default function vehicleWise() {
 
               <div className={Styles.graphsstyles}>
                 <div className={Styles.headingandselectcontainer}>
-                  <p className={Styles.graphHeading}> Basement- Companywise vehicle Parking</p>
-                  <select name="basements" id="basements" className={Styles.basementSelection}
-                    onChange={Selectionofbasement}>
-                    {basements.map((basement) => (
-                      <option key={basement.BasementID} value={basement.BasementID}>
-                        {basement.Basement_Name}
-                      </option>
-                    ))}
-                  </select>
+                  <p className={Styles.graphHeading}> Basement Selection Wise</p>
+                  <div className={Styles.Basebtn}>
+                    <button className={Styles.vbtn}>
+                      <FaDownload />
+                    </button>
+                    <select name="basements" id="basements" className={Styles.basementSelection}
+                      onChange={Selectionofbasement}>
+                      {basements.map((basement) => (
+                        <option key={basement.BasementID} value={basement.BasementID}>
+                          {basement.Basement_Name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 {loading ? (
                   // <FaSpinner className={Styles.animatespin} size={20} />
@@ -367,15 +439,20 @@ export default function vehicleWise() {
 
               <div className={Styles.graphsstyles}>
                 <div className={Styles.headingandselectcontainer}>
-                  <p className={Styles.graphHeading}> Company - Basementwise vehicle Parking</p>
-                  <select name="companies" id="companies" className={Styles.basementSelection}
-                    onChange={Selectionofcompany}>
-                    {comapaniesData.map((company) => (
-                      <option key={company.TenantID} value={company.TenantID}>
-                        {company.tenant_name}
-                      </option>
-                    ))}
-                  </select>
+                  <p className={Styles.graphHeading}> Company Selection Wise</p>
+                  <div className={Styles.Basebtn}>
+                    <button className={Styles.vbtn}>
+                      <FaDownload />
+                    </button>
+                    <select name="companies" id="companies" className={Styles.basementSelection}
+                      onChange={Selectionofcompany}>
+                      {comapaniesData.map((company) => (
+                        <option key={company.TenantID} value={company.TenantID}>
+                          {company.tenant_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 {loadingForcomapnyview ? (
                   // <FaSpinner className={Styles.animatespin} size={20} />
