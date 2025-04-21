@@ -53,6 +53,11 @@ export default function vehicleWise() {
   const [loadingForcomapnyview, setloadingForcomapnyview] = useState(false);
   const [componentloading, setcomponentloading] = useState(false)
   const [loading_total, setloading_total] = useState(false);
+  const [loading_allocated, setloading_allocated] = useState(false);
+  const [selectedBasementId, setSelectedBasementId] = useState('')
+  const [loading_basmentselect, setloading_basmentselect] = useState(false);
+  const [selectedCompanyId, setselectedCompanyId] = useState('')
+  const [loading_companyselection, setloading_companyselection] = useState(false);
 
  
   useEffect(() => {
@@ -110,10 +115,12 @@ export default function vehicleWise() {
     setBasements(basementdata);
     const firstBasementId = basementdata[0].BasementID.toString();
     console.log('---->>firstBasementId', firstBasementId)
+    setSelectedBasementId(firstBasementId)
     getvehicledetailsbyId(firstBasementId)
     setcomapanies(companiesList)
     const firstTenantId = companiesList[0].TenantID.toString()
     console.log('---->>firstTenantId', firstTenantId)
+    setselectedCompanyId(firstTenantId)
     getTenantbyId(firstTenantId)
 
   }
@@ -149,6 +156,7 @@ export default function vehicleWise() {
     console.log("Selected Basement ID:", BasementId);
     if(BasementId){
       getvehicledetailsbyId(BasementId)
+      setSelectedBasementId(BasementId)
     }
 
    
@@ -189,6 +197,7 @@ export default function vehicleWise() {
     console.log("Selected TenantID ID:", TenantID);
     if(TenantID){
       getTenantbyId(TenantID)
+      setselectedCompanyId(TenantID)
 
     }
 
@@ -275,6 +284,8 @@ export default function vehicleWise() {
     if(Type== 'Total'){
       setloading_total(true)
 
+    }else if(Type=='VAllocated'){
+      setloading_allocated(true)
     }
     try {
       const response = await fetch(
@@ -313,9 +324,111 @@ export default function vehicleWise() {
     }
     finally {
       setloading_total(false)
+      setloading_allocated(false)
 
     }
 
+
+  }
+
+  const downloadbyBasementId = async () =>{
+    console.log("Downloading for basement ID:", selectedBasementId);
+    if(selectedBasementId){
+      downloadReportbybasementId(selectedBasementId)   
+    }
+  }
+  const downloadReportbybasementId = async (BasementId: any) => {
+    setloading_basmentselect(true)
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/downloadreportbybasementId?BasementId=${encodeURIComponent(BasementId)}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to download file");
+      }
+      let filename = "Basement_report";
+      const contentDisposition = response.headers.get("Content-Disposition");
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename; // Name of the downloaded file
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Download successful!');
+
+
+    } catch (error) {
+
+    }
+    finally {
+      setloading_basmentselect(false)
+
+    }
+
+  }
+
+  const downloadbyCompanyId = async ()=>{
+    console.log('----->>> Selected companyId:',selectedCompanyId)
+    if(selectedCompanyId){
+      downloadReportbyCompanyId(selectedCompanyId)
+
+    }
+  }
+  const downloadReportbyCompanyId = async(TenantID: any)=>{
+    console.log('TenantID', TenantID)
+    setloading_companyselection(true)
+    try{
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/companyreportbyId?CompanyId=${encodeURIComponent(TenantID)}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to download file");
+      }
+
+      let filename = "Company_report";
+      const contentDisposition = response.headers.get("Content-Disposition");
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename; // Name of the downloaded file
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Download successful!');
+
+    }
+    catch(error){
+
+    }
+    finally{
+      setloading_companyselection(false)
+
+    }
 
   }
   
@@ -381,9 +494,13 @@ export default function vehicleWise() {
               <div className={Styles.graphsstyles}>
                 <div className={Styles.headingandselectcontainer}>
                   <p className={Styles.graphHeading}> Allocated Vehicles in a Basement</p>
-                  <button className={Styles.vbtn}>
-                    <FaDownload />
-                  </button>
+                  {loading_allocated ? (<FaSpinner className={Styles.animatespin} size={20} />
+                  ) : (
+                    <button className={Styles.vbtn}
+                      onClick={() => downloadvehicleReport('VAllocated')}>
+                      <FaDownload />
+                    </button>
+                  )}
                 </div>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={allocatedvehiclesData}  >
@@ -403,9 +520,13 @@ export default function vehicleWise() {
                 <div className={Styles.headingandselectcontainer}>
                   <p className={Styles.graphHeading}> Basement Selection Wise</p>
                   <div className={Styles.Basebtn}>
-                    <button className={Styles.vbtn}>
-                      <FaDownload />
-                    </button>
+                    {loading_basmentselect ? (<FaSpinner className={Styles.animatespin} size={20} />
+                    ) : (
+                      <button className={Styles.vbtn}
+                        onClick={() => downloadbyBasementId()}>
+                        <FaDownload />
+                      </button>
+                    )}
                     <select name="basements" id="basements" className={Styles.basementSelection}
                       onChange={Selectionofbasement}>
                       {basements.map((basement) => (
@@ -441,9 +562,13 @@ export default function vehicleWise() {
                 <div className={Styles.headingandselectcontainer}>
                   <p className={Styles.graphHeading}> Company Selection Wise</p>
                   <div className={Styles.Basebtn}>
-                    <button className={Styles.vbtn}>
-                      <FaDownload />
-                    </button>
+                    {loading_companyselection ? (<FaSpinner className={Styles.animatespin} size={20} />
+                    ) : (
+                      <button className={Styles.vbtn}
+                        onClick={() => downloadbyCompanyId()}>
+                        <FaDownload />
+                      </button>
+                    )}
                     <select name="companies" id="companies" className={Styles.basementSelection}
                       onChange={Selectionofcompany}>
                       {comapaniesData.map((company) => (
